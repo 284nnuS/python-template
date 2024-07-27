@@ -3,10 +3,9 @@ from typing import Annotated, Any
 
 from pydantic import (
     AnyUrl,
-    BeforeValidator,
     HttpUrl,
     PostgresDsn,
-    computed_field,
+    BeforeValidator
 )
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -26,7 +25,7 @@ class Settings(BaseSettings):
     )
 
     API_V1_STR: str
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 2
 
     BACKEND_CORS_ORIGINS: Annotated[
@@ -41,14 +40,16 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str = ""
 
-    @computed_field  # type: ignore[misc]
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
         return MultiHostUrl.build(
-            scheme="postgresql+psycopg",
+            scheme="postgresql",
             username=self.POSTGRES_USER,
             password=self.POSTGRES_PASSWORD,
             host=self.POSTGRES_SERVER,
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_DB,
         )
+
+
+settings = Settings()
